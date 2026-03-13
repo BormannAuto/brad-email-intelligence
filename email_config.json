@@ -1,0 +1,71 @@
+{
+  "_comment": "Bormann Marketing Email Intelligence v3 — Configuration Template",
+  "_instructions": "Fill in real values before first run. Do NOT commit this file with real tokens.",
+
+  "blocked_domains": [
+    "marketing.example.com",
+    "newsletters.example.com"
+  ],
+
+  "blocked_sender_patterns": [
+    "noreply@.*",
+    "no-reply@.*",
+    "donotreply@.*",
+    "notifications@.*",
+    "alerts@.*",
+    "updates@.*"
+  ],
+
+  "blocked_subject_patterns": [
+    "\\[EXTERNAL\\]\\s*FW:",
+    "automatic reply",
+    "out of office",
+    "delivery status"
+  ],
+
+  "newsletter_domains": [
+    "avnetwork.com",
+    "avshow.com",
+    "resmag.com"
+  ],
+
+  "manufacturer_domains": [
+    "shure.com",
+    "biamp.com",
+    "legrand.com",
+    "middleatlantic.com",
+    "qsc.com",
+    "crestron.com",
+    "extron.com",
+    "atlasied.com",
+    "belden.com"
+  ],
+
+  "priority_manufacturers": [
+    "Shure",
+    "Biamp",
+    "Legrand",
+    "Middle Atlantic"
+  ],
+
+  "workdrive_brand_folders": {
+    "_comment": "Map brand names to Zoho WorkDrive folder IDs",
+    "_instructions": "Get folder IDs from WorkDrive. Example: Shure → ID of your Shure brand folder.",
+    "Shure":          "FOLDER_ID_SHURE",
+    "Biamp":          "FOLDER_ID_BIAMP",
+    "Legrand":        "FOLDER_ID_LEGRAND",
+    "Middle Atlantic": "FOLDER_ID_MIDDLE_ATLANTIC"
+  },
+
+  "followup_thresholds_hours": {
+    "Dealer-Customer": 48,
+    "Manufacturer":    72,
+    "default":         96
+  },
+
+  "debrief_settings": {
+    "zone2_max_items":  3,
+    "zone25_max_items": 7,
+    "sent_log_days":    30
+  }
+}

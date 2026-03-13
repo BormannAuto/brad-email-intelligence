@@ -1,0 +1,30 @@
+{
+  "_comment": "Default voice profile — replace by running build_profile.py after adding samples to voice/samples/",
+  "summary": "Brad is the owner of Bormann Marketing. He writes in a direct, warm-but-professional tone. Short sentences. No corporate buzzwords. Gets to the point fast. Closes with clear next steps.",
+  "manufacturer_principal": "With manufacturers, Brad is collegial and confident — peer to peer. He's direct about issues and asks for what he needs without hedging. He tracks down answers instead of saying he'll 'look into it.' Tone: collaborative, efficient, occasionally informal.",
+  "dealer_customer": "With dealers and customers, Brad is helpful and solution-oriented. He's the trusted rep who knows the products and the territory. He gives recommendations, not just options. Tone: approachable, knowledgeable, never pushy.",
+  "internal_team": "With his own team, Brad is brief and direct. Action items are crystal clear. No hand-holding, no padding. If something needs doing, he says who does it and when. Tone: efficient, supportive, occasionally dry.",
+  "unknown": "Brad writes professionally and directly. He's concise and closes every email with a clear action or next step. No filler. No corporate speak.",
+  "do_not_use": [
+    "Hope this finds you well",
+    "Per my last email",
+    "Going forward",
+    "As per",
+    "Please don't hesitate",
+    "Kindly",
+    "Touch base",
+    "Synergy",
+    "Circle back",
+    "Leverage"
+  ],
+  "signature_moves": [
+    "Leads with the most important thing first",
+    "Uses short standalone sentences for emphasis",
+    "Closes with a specific ask or next step",
+    "Drops formal salutations for ongoing threads",
+    "Uses dashes for asides instead of parentheses"
+  ],
+  "built_at": "default",
+  "sample_count": 0,
+  "edit_count": 0
+}

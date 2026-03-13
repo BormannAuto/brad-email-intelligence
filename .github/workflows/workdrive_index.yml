@@ -1,0 +1,56 @@
+name: Weekly WorkDrive Index Rebuild
+
+# Runs Sundays at 6am CT to rebuild the product document index from Zoho WorkDrive.
+# Timezone note: 0 11 * * 0 = 6am CDT (summer). Change to 0 12 * * 0 for CST (winter).
+
+on:
+  schedule:
+    - cron: '0 11 * * 0'    # Sundays 6am CDT (summer). Change to '0 12 * * 0' Nov-Mar.
+  workflow_dispatch:          # Manual trigger for testing
+
+jobs:
+  rebuild-workdrive-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure git
+        run: |
+          git config --global user.email "pipeline@bormannmarketing.com"
+          git config --global user.name "Bormann Pipeline"
+
+      - name: Rebuild WorkDrive index
+        env:
+          ZOHO_WORKDRIVE_CLIENT_ID:    ${{ secrets.ZOHO_WORKDRIVE_CLIENT_ID }}
+          ZOHO_WORKDRIVE_CLIENT_SECRET: ${{ secrets.ZOHO_WORKDRIVE_CLIENT_SECRET }}
+          ZOHO_WORKDRIVE_REFRESH_TOKEN: ${{ secrets.ZOHO_WORKDRIVE_REFRESH_TOKEN }}
+        run: python workdrive_indexer.py
+
+      - name: Commit updated index
+        run: |
+          git add workdrive_index.json
+          git commit -m "[bot] workdrive index rebuild $(date -u +%Y-%m-%d)" --allow-empty
+          git push
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workdrive-index-log-${{ github.run_id }}
+          path: pipeline.log
+          retention-days: 7

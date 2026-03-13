@@ -1,0 +1,37 @@
+# Bormann Email Intelligence — .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+.env
+
+# Secrets — NEVER commit these
+*.env
+.env.*
+secrets.json
+credentials.json
+
+# Runtime data files (these get written fresh each pipeline run)
+# Commit workdrive_index.json so GitHub Pages can serve it
+# but exclude personal email data
+data/noise_senders_found.json
+data/sent_log.json
+data/edit_log.json
+data/email_activity_log.json
+data/brand_baseline.json
+data/contact_baselines.json
+today_drafts.json
+pipeline.log
+
+# The debrief IS committed (GitHub Pages)
+# brad-debrief.html — intentionally NOT excluded
+
+# MacOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp

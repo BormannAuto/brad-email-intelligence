@@ -1,0 +1,23 @@
+# Bormann Marketing Email Intelligence v3
+# Python 3.11+
+
+# HTTP / API
+requests>=2.31.0
+
+# Anthropic API
+anthropic>=0.25.0
+
+# HTML-to-text (email body cleaning)
+html2text>=2020.1.16
+
+# PDF extraction (WorkDrive)
+pdfplumber>=0.10.0
+
+# Excel extraction (WorkDrive)
+openpyxl>=3.1.0
+
+# Date utilities
+python-dateutil>=2.8.2
+
+# Git operations (commit debrief to GitHub Pages)
+gitpython>=3.1.40

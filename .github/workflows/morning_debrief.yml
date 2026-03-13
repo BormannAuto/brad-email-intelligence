@@ -1,0 +1,67 @@
+name: Morning Email Debrief
+
+# Timezone: 11:15 UTC = 6:15am CT in summer (CDT = UTC-5)
+# Update to 12:15 UTC in winter (CST = UTC-6)
+# Change: second Sunday of March and first Sunday of November (DST transitions)
+# Add a calendar reminder for yourself so you don't forget to update this.
+
+on:
+  schedule:
+    - cron: '15 11 * * *'    # 6:15am CDT (summer). Change to '15 12 * * *' Nov-Mar.
+  workflow_dispatch:          # Manual trigger for testing — use this before enabling cron
+
+jobs:
+  morning-debrief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need write access to commit brad-debrief.html back to repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure git for commit step
+        run: |
+          git config --global user.email "pipeline@bormannmarketing.com"
+          git config --global user.name "Bormann Pipeline"
+
+      - name: Run pipeline
+        env:
+          # Zoho Mail OAuth
+          ZOHO_MAIL_CLIENT_ID:         ${{ secrets.ZOHO_MAIL_CLIENT_ID }}
+          ZOHO_MAIL_CLIENT_SECRET:     ${{ secrets.ZOHO_MAIL_CLIENT_SECRET }}
+          ZOHO_MAIL_REFRESH_TOKEN:     ${{ secrets.ZOHO_MAIL_REFRESH_TOKEN }}
+          ZOHO_MAIL_ACCOUNT_ID:        ${{ secrets.ZOHO_MAIL_ACCOUNT_ID }}
+          # Zoho CRM OAuth
+          ZOHO_CRM_CLIENT_ID:          ${{ secrets.ZOHO_CRM_CLIENT_ID }}
+          ZOHO_CRM_CLIENT_SECRET:      ${{ secrets.ZOHO_CRM_CLIENT_SECRET }}
+          ZOHO_CRM_REFRESH_TOKEN:      ${{ secrets.ZOHO_CRM_REFRESH_TOKEN }}
+          # Zoho WorkDrive OAuth (optional — leave blank to disable WorkDrive features)
+          ZOHO_WORKDRIVE_CLIENT_ID:    ${{ secrets.ZOHO_WORKDRIVE_CLIENT_ID }}
+          ZOHO_WORKDRIVE_CLIENT_SECRET: ${{ secrets.ZOHO_WORKDRIVE_CLIENT_SECRET }}
+          ZOHO_WORKDRIVE_REFRESH_TOKEN: ${{ secrets.ZOHO_WORKDRIVE_REFRESH_TOKEN }}
+          # Anthropic
+          ANTHROPIC_API_KEY:           ${{ secrets.ANTHROPIC_API_KEY }}
+          # Debrief PIN (default: 2580 — override here for security)
+          DEBRIEF_PIN:                 ${{ secrets.DEBRIEF_PIN }}
+        run: python run_pipeline.py
+
+      - name: Upload pipeline log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-log-${{ github.run_id }}
+          path: pipeline.log
+          retention-days: 7
