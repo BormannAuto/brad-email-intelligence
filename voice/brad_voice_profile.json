@@ -26,5 +26,7 @@
   ],
   "built_at": "default",
   "sample_count": 0,
-  "edit_count": 0
+  "edit_count": 0,
+  "profile_version": 0,
+  "profile_schema_version": "1.0"
 }

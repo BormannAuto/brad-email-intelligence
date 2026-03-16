@@ -14,6 +14,8 @@ import logging
 import requests
 from typing import Optional
 
+from retry_utils import with_retry, check_response_status
+
 logger = logging.getLogger(__name__)
 
 ZOHO_ACCOUNTS_URL    = "https://accounts.zoho.com/oauth/v2/token"
@@ -66,15 +68,16 @@ def authenticate_workdrive() -> Optional[dict]:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+@with_retry(caller="zoho_workdrive_get")
 def _wd_get(session: dict, path: str, stream: bool = False, params: Optional[dict] = None):
-    """Authenticated GET against Zoho WorkDrive API."""
+    """Authenticated GET against Zoho WorkDrive API. Retries on transient errors."""
     url     = f"{ZOHO_WORKDRIVE_BASE}/{path}"
     headers = {
         "Authorization": f"Zoho-oauthtoken {session['access_token']}",
         "Accept":        "application/json",
     }
     resp = requests.get(url, headers=headers, params=params or {}, stream=stream, timeout=60)
-    resp.raise_for_status()
+    check_response_status(resp, caller="zoho_workdrive_get")
     return resp
 
 

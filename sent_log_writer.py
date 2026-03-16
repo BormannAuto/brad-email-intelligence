@@ -1,8 +1,12 @@
 """
 sent_log_writer.py
 Bormann Marketing — Email Intelligence System v3
-Writes a first-person log entry for each draft, stores in sent_log.json,
-and writes a note to the CRM contact record.
+
+Security:
+- Uses api_guard for 50-call cap.
+- Prompts include required "only reference provided content" instruction.
+- run_id deduplication: skips entries if today's run_id already in sent_log.json.
+- Log statements contain no email content, contact names, or email addresses.
 """
 
 import json
@@ -11,37 +15,32 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from anthropic import Anthropic
+from api_guard import make_claude_call
 
 logger = logging.getLogger(__name__)
 
-SENT_LOG_FILE    = "data/sent_log.json"
-RETENTION_DAYS   = 30
+SENT_LOG_FILE  = "data/sent_log.json"
+RETENTION_DAYS = 30
 
-SYSTEM_PROMPT = """You write concise, first-person log entries for Brad, the owner of Bormann Marketing. \
-Each entry should sound like a personal note Brad would write himself — not a system log. \
-Write in past tense. Be specific and direct. Max 30 words.
+SYSTEM_PROMPT = """You write concise, first-person log entries for Brad, the owner of Bormann Marketing.
+Sound like a personal note Brad would write — not a system log. Write in past tense. Max 30 words.
 
 Format: [I told / I confirmed / I asked / I pushed back on] [who] [what the core message was] [why or what happens next].
 
-Examples:
-"I told Sarah at AVI Systems the Shure MXA910 is back in stock and ships next week."
-"I confirmed with Mike at Biamp that the demo unit is available for the Henderson account."
-"I asked Jason to resend the revised quote — I needed the updated line item breakdown."
-"""
+IMPORTANT: Only reference information explicitly stated in the draft email provided.
+Do not infer, extrapolate, or add context not present in the source email.
+Write in first-person past tense as Brad. Do not invent details."""
 
 
 def _load_voice_summary() -> str:
-    """Load brief voice summary from brad_voice_profile.json for log style."""
     try:
         with open("voice/brad_voice_profile.json") as f:
-            profile = json.load(f)
-        return profile.get("summary", "")
+            return json.load(f).get("summary", "")
     except Exception:
         return ""
 
 
 def _load_sent_log() -> list[dict]:
-    """Load existing sent log, pruning entries older than 30 days."""
     try:
         with open(SENT_LOG_FILE) as f:
             entries = json.load(f)
@@ -59,7 +58,7 @@ def _load_sent_log() -> list[dict]:
             if entry_dt >= cutoff:
                 pruned.append(entry)
         except Exception:
-            pruned.append(entry)  # keep if date unparseable
+            pruned.append(entry)
     return pruned
 
 
@@ -75,37 +74,44 @@ def _save_sent_log(entries: list[dict]) -> None:
 def write_sent_log(
     drafts: list[dict],
     crm_session: Optional[dict],
+    run_id: Optional[str] = None,
 ) -> list[dict]:
     """
     For each draft, generate a log entry and write to sent_log.json + CRM.
-
-    Args:
-        drafts: list of draft records from draft_generator.py
-        crm_session: active CRM session (or None if CRM unavailable)
-
-    Returns:
-        list of new log entries appended this run
+    run_id deduplication: skips if this run_id already has entries in sent_log.json.
     """
     if not drafts:
         logger.info("No drafts to log.")
         return []
 
-    client       = Anthropic()
+    if run_id is None:
+        run_id = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    client        = Anthropic()
     voice_summary = _load_voice_summary()
     existing_log  = _load_sent_log()
-    new_entries   = []
+
+    # Idempotency: skip if run_id already present in log
+    existing_run_ids = {e.get("run_id") for e in existing_log}
+    if run_id in existing_run_ids:
+        logger.warning(
+            f"sent_log_writer: run_id {run_id} already in sent_log.json — "
+            f"skipping to prevent duplicate entries."
+        )
+        return []
+
+    new_entries = []
 
     for draft in drafts:
         draft_body     = draft.get("draft_body", "")
         recipient_name = draft.get("recipient_name", "")
-        recipient_co   = draft.get("category", "")  # company not always in draft record
         category       = draft.get("category", "")
         draft_id       = draft.get("draft_id", "")
+        is_placeholder = draft.get("is_placeholder", False)
 
-        if not draft_body:
+        if not draft_body or is_placeholder:
             continue
 
-        # Build prompt
         voice_note   = f"Voice guidance: {voice_summary}" if voice_summary else ""
         user_message = (
             f"Write a one-sentence log entry for Brad.\n\n"
@@ -115,37 +121,42 @@ def write_sent_log(
         )
 
         try:
-            response = client.messages.create(
-                model="claude-haiku-4-5-20251001",  # fast + cheap for log entries
+            log_entry_text = make_claude_call(
+                client,
+                model="claude-haiku-4-5-20251001",
                 max_tokens=80,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_message}],
-            )
-            log_entry_text = response.content[0].text.strip().strip('"')
+                caller="sent_log_writer",
+            ).strip().strip('"')
+        except RuntimeError as e:
+            logger.warning(f"Sent log entry skipped — API cap: {e}")
+            log_entry_text = f"Draft sent ({category})."
         except Exception as e:
             logger.warning(f"Log entry generation failed for draft {draft_id}: {e}")
-            log_entry_text = f"Draft sent to {recipient_name}."
+            log_entry_text = f"Draft sent ({category})."
 
         now = datetime.now(timezone.utc)
         entry = {
-            "date":               now.isoformat(),
-            "draft_id":           draft_id,
-            "recipient_name":     recipient_name,
-            "recipient_company":  draft.get("recipient_email", "").split("@")[-1],
-            "category":           category,
-            "log_entry":          log_entry_text,
+            "date":              now.isoformat(),
+            "run_id":            run_id,
+            "draft_id":          draft_id,
+            "recipient_name":    recipient_name,
+            "recipient_company": draft.get("recipient_email", "").split("@")[-1],
+            "category":          category,
+            "log_entry":         log_entry_text,
         }
         new_entries.append(entry)
-        logger.info(f"Log entry: {log_entry_text[:80]}")
+        # Log count and category only — no contact names or log entry content
+        logger.debug(f"Log entry generated — category: {category}")
 
         # Write to CRM
         if crm_session and draft.get("recipient_email"):
             _write_crm_note(crm_session, draft, log_entry_text, now)
 
-    # Append new entries to rolling log
     existing_log.extend(new_entries)
     _save_sent_log(existing_log)
-    logger.info(f"sent_log_writer: wrote {len(new_entries)} entries.")
+    logger.info(f"sent_log_writer: wrote {len(new_entries)} entries (run_id: {run_id}).")
     return new_entries
 
 
@@ -155,25 +166,19 @@ def _write_crm_note(
     log_entry_text: str,
     timestamp: datetime,
 ) -> None:
-    """Write log entry as a CRM note. Never blocks pipeline on failure."""
+    """Write log entry as CRM note. Never blocks pipeline on failure."""
     try:
         from zoho_crm_connector import lookup_contact, add_note
 
         contact = lookup_contact(crm_session, draft.get("recipient_email", ""))
         if not contact.get("found") or not contact.get("contact_id"):
-            logger.debug(
-                f"CRM note skipped — no contact found for {draft.get('recipient_email')}"
-            )
+            logger.debug("CRM note skipped — contact not found.")
             return
 
-        note_text = (
-            f"{timestamp.strftime('%Y-%m-%d')} AI-Draft-Log: {log_entry_text}"
-        )
-        success = add_note(crm_session, contact["contact_id"], note_text)
+        note_text = f"{timestamp.strftime('%Y-%m-%d')} AI-Draft-Log: {log_entry_text}"
+        success   = add_note(crm_session, contact["contact_id"], note_text)
         if success:
-            logger.debug(
-                f"CRM note written for {draft.get('recipient_name')} "
-                f"({contact['contact_id']})"
-            )
+            logger.debug("CRM note written successfully.")
     except Exception as e:
-        logger.warning(f"CRM note write failed for {draft.get('recipient_email')}: {e}")
+        # Never log recipient email address — category only
+        logger.warning(f"CRM note write failed (category: {draft.get('category', '?')}): {e}")

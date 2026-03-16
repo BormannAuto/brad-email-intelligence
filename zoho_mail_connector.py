@@ -13,6 +13,8 @@ import html2text
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from retry_utils import with_retry, check_response_status
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -75,24 +77,26 @@ def authenticate_mail() -> dict:
 # Internal request helper
 # ---------------------------------------------------------------------------
 
+@with_retry(caller="zoho_mail_get")
 def _mail_get(session: dict, path: str, params: Optional[dict] = None) -> dict:
-    """Authenticated GET against Zoho Mail API."""
+    """Authenticated GET against Zoho Mail API. Retries on transient errors."""
     url = f"{ZOHO_MAIL_BASE}/{session['account_id']}/{path}"
     headers = {"Authorization": f"Zoho-oauthtoken {session['access_token']}"}
     resp = requests.get(url, headers=headers, params=params or {}, timeout=30)
-    resp.raise_for_status()
+    check_response_status(resp, caller="zoho_mail_get")
     return resp.json()
 
 
+@with_retry(caller="zoho_mail_post")
 def _mail_post(session: dict, path: str, payload: dict) -> dict:
-    """Authenticated POST against Zoho Mail API."""
+    """Authenticated POST against Zoho Mail API. Retries on transient errors."""
     url = f"{ZOHO_MAIL_BASE}/{session['account_id']}/{path}"
     headers = {
         "Authorization": f"Zoho-oauthtoken {session['access_token']}",
         "Content-Type":  "application/json",
     }
     resp = requests.post(url, headers=headers, json=payload, timeout=30)
-    resp.raise_for_status()
+    check_response_status(resp, caller="zoho_mail_post")
     return resp.json()
 
 
@@ -269,10 +273,10 @@ def create_draft(
             data.get("data", {}).get("messageId")
             or data.get("data", {}).get("msgId")
         )
-        logger.info(f"Draft created: {draft_id} for '{subject}' to {to}")
+        logger.info(f"Draft created: {draft_id}")
         return str(draft_id) if draft_id else None
     except Exception as e:
-        logger.error(f"create_draft failed for '{subject}' to {to}: {e}")
+        logger.error(f"create_draft failed: {e}")
         return None
 
 

@@ -1,0 +1,99 @@
+{
+  "_comment": "SANDBOX mock data for Zoho Mail API. Used when SANDBOX_MODE=true. Contains synthetic data only — no real email addresses, contacts, or business content.",
+
+  "auth_response": {
+    "access_token": "sandbox_mail_token_abc123",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  },
+
+  "messages_response": {
+    "status": {
+      "code": 200,
+      "description": "success"
+    },
+    "data": [
+      {
+        "messageId": "MSG001",
+        "msgId": "MSG001",
+        "threadId": "THREAD001",
+        "headerMessageId": "<msg001@sandbox.test>",
+        "subject": "Q2 Pricing Update — Sandbox Brand A",
+        "fromAddress": "Sandbox Rep <rep@sandboxbrand-a.test>",
+        "toAddress": "Brad <brad@bormannmktg.test>",
+        "receivedTime": 1710500000000,
+        "content": "<p>Hi Brad,</p><p>Please find the Q2 pricing attached. Let us know if you have questions.</p><p>Thanks,<br>Sandbox Rep</p>",
+        "htmlContent": "<p>Hi Brad,</p><p>Please find the Q2 pricing attached. Let us know if you have questions.</p><p>Thanks,<br>Sandbox Rep</p>",
+        "hasAttachment": false,
+        "folderId": 1,
+        "inReplyTo": ""
+      },
+      {
+        "messageId": "MSG002",
+        "msgId": "MSG002",
+        "threadId": "THREAD002",
+        "headerMessageId": "<msg002@sandbox.test>",
+        "subject": "Dealer Quote Request — Sandbox Dealer",
+        "fromAddress": "Sandbox Dealer <purchasing@sandboxdealer.test>",
+        "toAddress": "Brad <brad@bormannmktg.test>",
+        "receivedTime": 1710496000000,
+        "content": "<p>Brad,</p><p>Can you get me a quote on 4x Sandbox Widget Pro? Need it for a job in Fargo.</p><p>-Sandbox Purchasing</p>",
+        "htmlContent": "<p>Brad,</p><p>Can you get me a quote on 4x Sandbox Widget Pro? Need it for a job in Fargo.</p><p>-Sandbox Purchasing</p>",
+        "hasAttachment": false,
+        "folderId": 1,
+        "inReplyTo": ""
+      },
+      {
+        "messageId": "MSG003",
+        "msgId": "MSG003",
+        "threadId": "THREAD003",
+        "headerMessageId": "<msg003@sandbox.test>",
+        "subject": "Weekly Newsletter — Sandbox Industry News",
+        "fromAddress": "Sandbox Newsletter <noreply@sandboxnews.test>",
+        "toAddress": "Brad <brad@bormannmktg.test>",
+        "receivedTime": 1710492000000,
+        "content": "<html><body><h1>This Week in AV</h1><p>Industry news content...</p></body></html>",
+        "htmlContent": "<html><body><h1>This Week in AV</h1><p>Industry news content...</p></body></html>",
+        "hasAttachment": false,
+        "folderId": 1,
+        "inReplyTo": ""
+      }
+    ]
+  },
+
+  "thread_response": {
+    "status": {
+      "code": 200,
+      "description": "success"
+    },
+    "data": {
+      "messages": [
+        {
+          "messageId": "MSG001",
+          "fromAddress": "Sandbox Rep <rep@sandboxbrand-a.test>",
+          "receivedTime": 1710500000000,
+          "content": "<p>Hi Brad,</p><p>Please find the Q2 pricing attached.</p>"
+        }
+      ]
+    }
+  },
+
+  "draft_create_response": {
+    "status": {
+      "code": 200,
+      "description": "success"
+    },
+    "data": {
+      "messageId": "DRAFT001",
+      "msgId": "DRAFT001"
+    }
+  },
+
+  "sent_messages_response": {
+    "status": {
+      "code": 200,
+      "description": "success"
+    },
+    "data": []
+  }
+}

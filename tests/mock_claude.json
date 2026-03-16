@@ -1,0 +1,23 @@
+{
+  "_comment": "SANDBOX mock responses for Claude API calls. Used when SANDBOX_MODE=true. Keyed by caller name (matches api_guard.py caller parameter). Each entry is the text the mock returns.",
+
+  "categorizer": {
+    "MSG001": "{\"category\": \"Manufacturer-Principal\", \"urgency\": 2, \"draft_needed\": true, \"hold_flag\": false, \"sentiment_score\": 0.7, \"product_inquiry\": false, \"follow_up_needed\": false, \"summary\": \"Q2 pricing update from manufacturer\"}",
+    "MSG002": "{\"category\": \"Dealer-Customer\", \"urgency\": 1, \"draft_needed\": true, \"hold_flag\": false, \"sentiment_score\": 0.8, \"product_inquiry\": true, \"follow_up_needed\": false, \"summary\": \"Quote request for 4 units, Fargo job site\"}",
+    "MSG003": "{\"category\": \"Admin-Noise\", \"urgency\": 5, \"draft_needed\": false, \"hold_flag\": false, \"sentiment_score\": 0.5, \"product_inquiry\": false, \"follow_up_needed\": false, \"summary\": \"Industry newsletter — auto-filtered\"}"
+  },
+
+  "draft_generator": {
+    "MSG001": "Got it — thanks for the Q2 update. I'll get this in front of our dealers this week.\n\nOne question: are there any changes to the dealer tier structure, or is this a straight price adjustment?\n\nBrad",
+    "MSG002": "Hey — I can get you pricing on those. Let me pull the current dealer cost on the Sandbox Widget Pro and get back to you by end of day.\n\nIs this for a specific install, or are you building out your stock?\n\nBrad"
+  },
+
+  "sent_log_writer": {
+    "MSG001": "Acknowledged Q2 pricing update from Sandbox Brand A. Asked about dealer tier structure changes.",
+    "MSG002": "Responded to quote request from Sandbox Dealer for 4x Sandbox Widget Pro. Promised pricing by end of day. Asked about install vs. stock."
+  },
+
+  "_failure_simulation": {
+    "_note": "When MOCK_ZOHO_FAIL=true, run_pipeline.py raises a simulated auth failure before any API calls. Claude mock responses are never reached in failure mode."
+  }
+}

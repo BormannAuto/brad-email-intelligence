@@ -22,8 +22,12 @@ data/edit_log.json
 data/email_activity_log.json
 data/brand_baseline.json
 data/contact_baselines.json
+data/pipeline_alerts.json
 today_drafts.json
 pipeline.log
+
+# Sandbox test output — never commit
+tests/sandbox_output/
 
 # The debrief IS committed (GitHub Pages)
 # brad-debrief.html — intentionally NOT excluded

@@ -1,0 +1,56 @@
+{
+  "_comment": "SANDBOX mock data for Zoho CRM API. Used when SANDBOX_MODE=true. Contains synthetic data only — no real names, companies, or contact information.",
+
+  "auth_response": {
+    "access_token": "sandbox_crm_token_xyz789",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  },
+
+  "contacts_search_response": {
+    "data": [
+      {
+        "id": "CONTACT001",
+        "Full_Name": "Sandbox Contact One",
+        "Account_Name": {
+          "id": "ACCOUNT001",
+          "name": "Sandbox Brand A"
+        },
+        "Last_Activity_Time": "2026-03-15T10:00:00+00:00",
+        "Description": "Key contact at Sandbox Brand A. Good relationship."
+      }
+    ]
+  },
+
+  "contacts_not_found_response": {
+    "data": []
+  },
+
+  "leads_search_response": {
+    "data": []
+  },
+
+  "accounts_search_response": {
+    "data": [
+      {
+        "id": "ACCOUNT001",
+        "Account_Name": "Sandbox Brand A",
+        "Description": "Manufacturer in sandbox test territory."
+      }
+    ]
+  },
+
+  "note_create_response": {
+    "data": [
+      {
+        "code": "SUCCESS",
+        "details": {
+          "Modified_Time": "2026-03-16T11:15:00+00:00",
+          "id": "NOTE001"
+        },
+        "message": "record added",
+        "status": "success"
+      }
+    ]
+  }
+}

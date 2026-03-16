@@ -11,6 +11,8 @@ import logging
 import requests
 from typing import Optional
 
+from retry_utils import with_retry, check_response_status
+
 logger = logging.getLogger(__name__)
 
 ZOHO_ACCOUNTS_URL = "https://accounts.zoho.com/oauth/v2/token"
@@ -61,22 +63,26 @@ def authenticate_crm() -> dict:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+@with_retry(caller="zoho_crm_get")
 def _crm_get(session: dict, path: str, params: Optional[dict] = None) -> dict:
+    """Authenticated GET against Zoho CRM API. Retries on transient errors."""
     url     = f"{ZOHO_CRM_BASE}/{path}"
     headers = {"Authorization": f"Zoho-oauthtoken {session['access_token']}"}
     resp    = requests.get(url, headers=headers, params=params or {}, timeout=30)
-    resp.raise_for_status()
+    check_response_status(resp, caller="zoho_crm_get")
     return resp.json()
 
 
+@with_retry(caller="zoho_crm_post")
 def _crm_post(session: dict, path: str, payload: dict) -> dict:
+    """Authenticated POST against Zoho CRM API. Retries on transient errors."""
     url     = f"{ZOHO_CRM_BASE}/{path}"
     headers = {
         "Authorization": f"Zoho-oauthtoken {session['access_token']}",
         "Content-Type":  "application/json",
     }
     resp = requests.post(url, headers=headers, json=payload, timeout=30)
-    resp.raise_for_status()
+    check_response_status(resp, caller="zoho_crm_post")
     return resp.json()
 
 

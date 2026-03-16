@@ -1,0 +1,52 @@
+{
+  "_comment": "SANDBOX mock data for Zoho WorkDrive API. Used when SANDBOX_MODE=true. WorkDrive features are gracefully disabled if env vars not set — this mock is used only when WORKDRIVE_ENABLED is also true in sandbox.",
+
+  "auth_response": {
+    "access_token": "sandbox_workdrive_token_def456",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  },
+
+  "folder_list_response": {
+    "data": [
+      {
+        "id": "FILE001",
+        "attributes": {
+          "name": "Sandbox Brand A — Product Guide.pdf",
+          "type": "pdf"
+        }
+      },
+      {
+        "id": "FILE002",
+        "attributes": {
+          "name": "Sandbox Brand A — Q2 Pricing.xlsx",
+          "type": "xlsx"
+        }
+      }
+    ]
+  },
+
+  "file_text_content": {
+    "FILE001": "SANDBOX PRODUCT GUIDE\n\nSandbox Widget Pro:\n- MSRP: $999\n- Key features: Synthetic feature A, Synthetic feature B\n- Warranty: 5 years\n\nSandbox Widget Lite:\n- MSRP: $499\n- Key features: Synthetic feature A\n- Warranty: 3 years",
+
+    "FILE002": "Sheet: Q2 Pricing\nSKU\tProduct\tDealer Price\tMSRP\nSWP-100\tSandbox Widget Pro\t$750\t$999\nSWL-100\tSandbox Widget Lite\t$350\t$499"
+  },
+
+  "workdrive_index": {
+    "sandbox_brand_a": [
+      {
+        "file_id": "FILE001",
+        "file_name": "Sandbox Brand A — Product Guide.pdf",
+        "file_type": "pdf",
+        "brand": "sandbox_brand_a",
+        "chunks": [
+          {
+            "chunk_id": "FILE001_0",
+            "text": "SANDBOX PRODUCT GUIDE\n\nSandbox Widget Pro:\n- MSRP: $999\n- Key features: Synthetic feature A, Synthetic feature B\n- Warranty: 5 years",
+            "keywords": ["widget", "pro", "pricing", "msrp", "warranty"]
+          }
+        ]
+      }
+    ]
+  }
+}
