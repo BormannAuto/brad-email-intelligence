@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "JSON Schema validation schema for Zoho Mail email_metadata objects passed to IntegrityGate.pre_validate(). Field names marked HUMAN VERIFICATION REQUIRED — see SECURITY_AUDIT.md.",
+  "schema_version": "1.0",
+  "config_type": "zoho_mail_schema",
+  "last_updated": "2026-03-16",
+  "updated_by": "Tony",
+  "type": "object",
+  "required": ["messageId", "threadId", "fromAddress", "subject", "receivedTime"],
+  "properties": {
+    "messageId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "HUMAN VERIFICATION REQUIRED: Zoho internal message ID field name"
+    },
+    "threadId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "HUMAN VERIFICATION REQUIRED: Zoho thread grouping ID"
+    },
+    "fromAddress": {
+      "type": "string",
+      "minLength": 1,
+      "description": "HUMAN VERIFICATION REQUIRED: sender address, format 'Name <email>'"
+    },
+    "toAddress": {
+      "type": "string",
+      "description": "HUMAN VERIFICATION REQUIRED: recipient address"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line"
+    },
+    "receivedTime": {
+      "description": "HUMAN VERIFICATION REQUIRED: epoch ms or ISO string — verify format from live API",
+      "oneOf": [
+        {"type": "integer", "minimum": 0},
+        {"type": "string", "minLength": 1}
+      ]
+    },
+    "content": {
+      "type": "string",
+      "description": "HTML body content — may be empty for attachments-only emails"
+    },
+    "htmlContent": {
+      "type": "string",
+      "description": "HUMAN VERIFICATION REQUIRED: alternate HTML body field — verify which is populated"
+    },
+    "hasAttachment": {
+      "type": "boolean"
+    },
+    "inReplyTo": {
+      "type": "string",
+      "description": "RFC 2822 In-Reply-To header — used for thread chaining"
+    },
+    "folderId": {
+      "description": "HUMAN VERIFICATION REQUIRED: Zoho folder ID — not guaranteed to be integer",
+      "oneOf": [
+        {"type": "integer"},
+        {"type": "string"}
+      ]
+    }
+  },
+  "additionalProperties": true
+}

@@ -190,7 +190,12 @@ def fetch_thread_context(session: dict, thread_id: str, max_messages: int = 3) -
     """
     try:
         data = _mail_get(session, f"threads/{thread_id}")
-        messages = data.get("data", {}).get("messages", [])
+        # schema verified 2026-03-17: thread response is a flat array under data[], NOT data.messages
+        messages = data.get("data", [])
+        if isinstance(messages, dict):
+            # Defensive: if API ever wraps it, surface the issue clearly
+            logger.warning("fetch_thread_context: expected data[] array, got dict — check API response.")
+            messages = []
         # Most recent first
         messages = sorted(
             messages,

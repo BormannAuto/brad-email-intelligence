@@ -19,6 +19,12 @@ openpyxl>=3.1.0
 # Date utilities
 python-dateutil>=2.8.2
 
+# Prompt templating (PromptRegistry)
+jinja2>=3.1.0
+
+# JSON schema validation (IntegrityGate)
+jsonschema>=4.0.0
+
 # NOTE: gitpython intentionally NOT included.
 # run_pipeline.py commits via subprocess git calls — gitpython is unused.
 # Removed: unused dependency expanding attack surface with no benefit (security audit finding S9).

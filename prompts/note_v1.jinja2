@@ -1,0 +1,29 @@
+{# prompt_name: note #}
+{# version: 1.0 #}
+{# output_schema_class: NoteOutput #}
+{# date_last_reviewed: 2026-03-16 #}
+{# reviewed_by: Tony #}
+{# description: Generates a CRM note from email thread context for contact enrichment #}
+
+Generate a CRM activity note from the following email interaction. This note will be written to the Zoho CRM contact record.
+
+RULES:
+- note_text must not contain email addresses, phone numbers, or names (use "the customer" / "the contact")
+- note_text must be under 150 words
+- note_type: one of: INBOUND_INQUIRY | QUOTE_DISCUSSION | SUPPORT_INTERACTION | GENERAL_CONTACT | ORDER_UPDATE
+- requires_follow_up: true if the interaction suggests Brad should take a further action
+- follow_up_hint: brief action description if requires_follow_up is true, otherwise null
+- Do not infer information not present in the source; log only what explicitly occurred
+
+THREAD ID: {{ thread_id }}
+CATEGORY: {{ category }}
+INTERACTION DATE: {{ interaction_date_utc }}
+CONTACT ID: {{ contact_id }}
+
+--- EMAIL SUMMARY CONTEXT ---
+Category: {{ category }}
+Thread Length: {{ thread_length }}
+Has WorkDrive Context: {{ has_workdrive_context }}
+Draft Generated: {{ draft_generated }}
+Flags Raised: {{ flags | join(', ') if flags else 'none' }}
+--- END CONTEXT ---

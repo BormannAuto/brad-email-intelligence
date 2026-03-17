@@ -206,7 +206,7 @@ def add_note(session: dict, contact_id: str, note_text: str) -> bool:
                 "Note_Title":   "AI-Draft-Log",
                 "Note_Content": note_text,
                 "Parent_Id":    contact_id,
-                "$se_module":   "Contacts",
+                "se_module":    "Contacts",  # verified: no $ prefix (zoho_crm_schema.json 2026-03-17)
             }]
         }
         resp = _crm_post(session, "Notes", payload)

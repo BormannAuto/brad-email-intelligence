@@ -178,15 +178,111 @@ def _mark_run_complete(run_id: str) -> None:
 # ── Sandbox mode ──────────────────────────────────────────────────────────
 
 def _load_sandbox_mail() -> list[dict]:
-    """Load mock email data for sandbox mode."""
+    """
+    Load mock email data for sandbox mode.
+    Reads the 'parsed_emails' key — pre-parsed email dicts matching the output
+    of zoho_mail_connector._parse_message(). The file also contains raw API
+    response examples under other keys (auth_response, etc.) for reference.
+    """
     try:
         with open("tests/mock_zoho_mail.json") as f:
             data = json.load(f)
-        logger.info(f"[SANDBOX] Loaded {len(data)} mock emails.")
-        return data
+        emails = data.get("parsed_emails", [])
+        if not isinstance(emails, list):
+            logger.error("[SANDBOX] mock_zoho_mail.json 'parsed_emails' is not a list — using empty list.")
+            return []
+        logger.info(f"[SANDBOX] Loaded {len(emails)} mock emails.")
+        return emails
     except FileNotFoundError:
         logger.warning("[SANDBOX] tests/mock_zoho_mail.json not found — using empty list.")
         return []
+    except json.JSONDecodeError as e:
+        logger.error(f"[SANDBOX] mock_zoho_mail.json is malformed: {e} — using empty list.")
+        return []
+
+
+# ── Sandbox helpers ───────────────────────────────────────────────────────
+
+def _sandbox_categorize(emails: list[dict]) -> list[dict]:
+    """
+    Return mock categorized emails for sandbox mode.
+    Loads mock Claude responses from tests/mock_claude.json if available,
+    otherwise applies sensible defaults so the rest of the pipeline exercises
+    real code paths (debrief builder, heat map, etc.).
+    """
+    mock_categories = {}
+    try:
+        with open("tests/mock_claude.json") as f:
+            mock_data = json.load(f)
+        mock_categories = mock_data.get("categorizer", {})
+    except Exception:
+        pass
+
+    CATEGORY_DEFAULTS = {
+        "category": "Manufacturer-Principal",
+        "urgency": 3,
+        "draft_needed": True,
+        "hold_flag": False,
+        "sentiment_score": 0.7,
+        "product_inquiry": False,
+        "follow_up_needed": False,
+        "summary": "[SANDBOX] Mock categorization",
+    }
+
+    result = []
+    for email in emails:
+        msg_id = email.get("id", "")
+        mock_str = mock_categories.get(msg_id)
+        if mock_str:
+            try:
+                cat = json.loads(mock_str)
+            except Exception:
+                cat = {}
+        else:
+            cat = {}
+        merged = {**CATEGORY_DEFAULTS, **cat}
+        enriched = {**email, **merged}
+        result.append(enriched)
+
+    logger.info(f"[SANDBOX] Categorized {len(result)} emails with mock data.")
+    return result
+
+
+def _sandbox_generate_drafts(categorized_emails: list[dict]) -> list[dict]:
+    """
+    Return mock drafts for sandbox mode.
+    Loads mock draft text from tests/mock_claude.json if available.
+    Only generates drafts for emails where draft_needed=True and hold_flag=False.
+    """
+    mock_drafts = {}
+    try:
+        with open("tests/mock_claude.json") as f:
+            mock_data = json.load(f)
+        mock_drafts = mock_data.get("draft_generator", {})
+    except Exception:
+        pass
+
+    drafts = []
+    for email in categorized_emails:
+        if not email.get("draft_needed") or email.get("hold_flag"):
+            continue
+        msg_id = email.get("id", "")
+        draft_body = mock_drafts.get(msg_id) or (
+            f"[SANDBOX DRAFT] This is a mock draft for email {msg_id}.\n\n"
+            f"Category: {email.get('category', 'unknown')}\n\n"
+            "Brad"
+        )
+        drafts.append({
+            "email_id":    msg_id,
+            "draft_id":    f"SANDBOX_DRAFT_{msg_id}",
+            "draft_body":  draft_body,
+            "category":    email.get("category", "unknown"),
+            "subject":     email.get("subject", ""),
+            "recipient_email": email.get("sender_email", ""),
+        })
+
+    logger.info(f"[SANDBOX] Generated {len(drafts)} mock drafts.")
+    return drafts
 
 
 # ── Global timeout ────────────────────────────────────────────────────────
@@ -262,7 +358,18 @@ def main() -> None:
             from zoho_crm_connector  import authenticate_crm
             from zoho_workdrive_connector import authenticate_workdrive
 
-            mail_session = authenticate_mail()
+            from alert_writer import alert_critical
+            try:
+                mail_session = authenticate_mail()
+            except Exception as auth_exc:
+                alert_critical(
+                    "auth_failure",
+                    "Zoho Mail token refresh failed — pipeline cannot start. "
+                    "Check ZOHO_MAIL_CLIENT_ID, ZOHO_MAIL_CLIENT_SECRET, and "
+                    "ZOHO_MAIL_REFRESH_TOKEN in GitHub Secrets.",
+                    run_id=run_id,
+                )
+                raise
             crm_session  = None
             try:
                 crm_session = authenticate_crm()
@@ -323,8 +430,11 @@ def main() -> None:
 
         # ── STEP 6: Categorize ────────────────────────────────────────
         _step("Step 6 — Categorize")
-        from categorizer import categorize_emails
-        categorized_emails = categorize_emails(real_emails)
+        if SANDBOX_MODE:
+            categorized_emails = _sandbox_categorize(real_emails)
+        else:
+            from categorizer import categorize_emails
+            categorized_emails = categorize_emails(real_emails)
 
         # ── STEP 7: Follow-up scanner ─────────────────────────────────
         _step("Step 7 — Follow-up Scanner + Sentiment")
@@ -345,17 +455,23 @@ def main() -> None:
 
         # ── STEP 9: Generate drafts ───────────────────────────────────
         _step("Step 9 — Generate Drafts")
-        from draft_generator import generate_drafts
-        drafts = generate_drafts(categorized_emails, mail_session, crm_session)
+        if SANDBOX_MODE:
+            drafts = _sandbox_generate_drafts(categorized_emails)
+        else:
+            from draft_generator import generate_drafts
+            drafts = generate_drafts(categorized_emails, mail_session, crm_session)
         logger.info(f"Generated {len(drafts)} drafts.")
 
         # ── STEP 10: Sent log writer ──────────────────────────────────
         _step("Step 10 — Sent Log Writer")
-        from sent_log_writer import write_sent_log
-        try:
-            write_sent_log(drafts, crm_session if not SANDBOX_MODE else None, run_id=run_id)
-        except Exception as e:
-            logger.warning(f"Sent log writer failed (non-fatal): {e}")
+        if SANDBOX_MODE:
+            logger.info("[SANDBOX] Sent log writer skipped — no Claude call in sandbox.")
+        else:
+            from sent_log_writer import write_sent_log
+            try:
+                write_sent_log(drafts, crm_session, run_id=run_id)
+            except Exception as e:
+                logger.warning(f"Sent log writer failed (non-fatal): {e}")
 
         # ── STEP 11: Heat map ─────────────────────────────────────────
         _step("Step 11 — Heat Map")
@@ -440,6 +556,15 @@ def main() -> None:
 
         from api_guard import claude_cap_status
         cap = claude_cap_status()
+
+        if cap.get("cap_reached") and not SANDBOX_MODE:
+            from alert_writer import alert_high
+            alert_high(
+                "cap_reached",
+                f"Claude API cap reached this run: {cap['calls_made']}/{cap['cap']} calls used. "
+                f"Some drafts may be missing. Investigate if this fires regularly.",
+                run_id=run_id,
+            )
 
         logger.info(f"Pipeline complete in {elapsed:.1f}s.")
         logger.info(

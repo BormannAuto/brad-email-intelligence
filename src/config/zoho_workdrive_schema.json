@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "JSON Schema validation schema for Zoho WorkDrive chunk context objects. HUMAN VERIFICATION REQUIRED — see SECURITY_AUDIT.md.",
+  "schema_version": "1.0",
+  "config_type": "zoho_workdrive_schema",
+  "last_updated": "2026-03-16",
+  "updated_by": "Tony",
+  "type": "object",
+  "required": ["chunk_id", "brand_tag", "content", "index_age_days"],
+  "properties": {
+    "chunk_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this WorkDrive content chunk"
+    },
+    "brand_tag": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Manufacturer brand this chunk belongs to — used for brand isolation gate"
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Text content of the chunk — must not be truncated"
+    },
+    "index_age_days": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Age of the WorkDrive index in days — must be <= 7 to pass freshness gate"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["HIGH", "MEDIUM", "LOW"],
+      "description": "Chunk relevance confidence — LOW blocks injection"
+    },
+    "source_file_id": {
+      "type": "string",
+      "description": "HUMAN VERIFICATION REQUIRED: WorkDrive file ID for audit trail"
+    },
+    "numeric_values": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Extracted numeric values from chunk for traceability checks"
+    }
+  },
+  "additionalProperties": true
+}

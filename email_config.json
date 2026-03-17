@@ -2,6 +2,8 @@
   "_comment": "Bormann Marketing Email Intelligence v3 — Configuration Template",
   "_instructions": "Fill in real values before first run. Do NOT commit this file with real tokens.",
 
+  "schema_version": "1.0",
+
   "blocked_domains": [
     "marketing.example.com",
     "newsletters.example.com"

@@ -1,0 +1,27 @@
+{# prompt_name: sent_log #}
+{# version: 1.0 #}
+{# output_schema_class: SentLogOutput #}
+{# date_last_reviewed: 2026-03-16 #}
+{# reviewed_by: Tony #}
+{# description: Generates a structured log entry summarizing a sent email interaction for CRM notes #}
+
+Generate a structured CRM note summarizing this sent email interaction.
+
+RULES:
+- summary_text must not contain email addresses, phone numbers, or personal contact details
+- topic_tags: 1–4 short lowercase tags describing the subject matter (e.g., "quote", "lead-time", "tech-support")
+- next_action: one of: NONE | FOLLOW_UP_7D | FOLLOW_UP_14D | AWAIT_RESPONSE | ESCALATE
+- Do not include draft body content verbatim — summarize only
+- crm_note_text must be under 200 words
+
+THREAD ID: {{ thread_id }}
+CATEGORY: {{ category }}
+SENT AT: {{ sent_at_utc }}
+RUN ID: {{ run_id }}
+
+--- ORIGINAL EMAIL SUMMARY ---
+Subject Hash: {{ subject_hash }}
+Sender: {{ sender_hash }}
+Draft Word Count: {{ draft_word_count }}
+Flags: {{ flags | join(', ') if flags else 'none' }}
+--- END SUMMARY ---

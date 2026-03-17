@@ -23,6 +23,7 @@ data/email_activity_log.json
 data/brand_baseline.json
 data/contact_baselines.json
 data/pipeline_alerts.json
+data/pipeline_state.json
 today_drafts.json
 pipeline.log
 

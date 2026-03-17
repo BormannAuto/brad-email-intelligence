@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "config_type": "retry_policies",
+  "last_updated": "2026-03-16",
+  "updated_by": "Tony",
+  "retry_policies": {
+    "Claude timeout": {
+      "retry_eligible": true,
+      "max_retries": 1,
+      "backoff_seconds": 30,
+      "manual_review": false,
+      "permanent_skip": false,
+      "alert_immediate": false
+    },
+    "Rate limit hit": {
+      "retry_eligible": true,
+      "max_retries": 3,
+      "backoff_seconds": [10, 30, 120],
+      "manual_review": false,
+      "permanent_skip": false,
+      "alert_immediate": false
+    },
+    "Validation failure": {
+      "retry_eligible": false,
+      "max_retries": 0,
+      "manual_review": true,
+      "permanent_skip": false,
+      "alert_immediate": false
+    },
+    "HOLD category": {
+      "retry_eligible": false,
+      "max_retries": 0,
+      "manual_review": false,
+      "permanent_skip": true,
+      "alert_immediate": false
+    },
+    "Auth failure": {
+      "retry_eligible": false,
+      "max_retries": 0,
+      "manual_review": false,
+      "permanent_skip": false,
+      "alert_immediate": true
+    },
+    "Schema mismatch": {
+      "retry_eligible": false,
+      "max_retries": 0,
+      "manual_review": true,
+      "permanent_skip": false,
+      "alert_immediate": false
+    },
+    "Timeout": {
+      "retry_eligible": true,
+      "max_retries": 1,
+      "backoff_seconds": 60,
+      "manual_review": false,
+      "permanent_skip": false,
+      "alert_immediate": false
+    },
+    "Unconfirmed intent": {
+      "retry_eligible": false,
+      "max_retries": 0,
+      "manual_review": true,
+      "permanent_skip": false,
+      "alert_immediate": false
+    },
+    "UNCONFIRMED_INTENT_ON_STARTUP": {
+      "retry_eligible": false,
+      "max_retries": 0,
+      "manual_review": true,
+      "permanent_skip": false,
+      "alert_immediate": false
+    }
+  }
+}

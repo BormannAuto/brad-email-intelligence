@@ -19,6 +19,7 @@ from anthropic import Anthropic
 from api_guard import make_claude_call
 from voice_profile import load_profile, get_draft_system_prompt
 from workdrive_retriever import retrieve_product_context
+from ai_output_validator import validate_draft
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +163,14 @@ def generate_drafts(
                 caller="draft_generator",
             )
             draft_body = raw.strip()
+            # Validate AI output before Zoho submission (security audit requirement)
+            validation = validate_draft(draft_body, category=category, email_index=len(drafts))
+            if not validation.valid:
+                logger.warning(
+                    f"AI output validation failed — using placeholder "
+                    f"(category: {category}, reason: {validation.reason})"
+                )
+                draft_body = DRAFT_FAILED_BODY
         except RuntimeError as e:
             # API cap reached
             logger.warning(f"Draft skipped — API cap: {e}")

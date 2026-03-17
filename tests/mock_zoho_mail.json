@@ -1,6 +1,48 @@
 {
   "_comment": "SANDBOX mock data for Zoho Mail API. Used when SANDBOX_MODE=true. Contains synthetic data only — no real email addresses, contacts, or business content.",
 
+  "parsed_emails": [
+    {
+      "id": "MSG001",
+      "threadId": "THREAD001",
+      "messageId": "<msg001@sandbox.test>",
+      "subject": "Q2 Pricing Update — Sandbox Brand A",
+      "sender_name": "Sandbox Rep",
+      "sender_email": "rep@sandboxbrand-a.test",
+      "date": 1710500000000,
+      "body_plain": "Hi Brad,\n\nPlease find the Q2 pricing attached. Let us know if you have questions.\n\nThanks,\nSandbox Rep",
+      "has_attachment": false,
+      "labels": 1,
+      "in_reply_to": ""
+    },
+    {
+      "id": "MSG002",
+      "threadId": "THREAD002",
+      "messageId": "<msg002@sandbox.test>",
+      "subject": "Dealer Quote Request — Sandbox Dealer",
+      "sender_name": "Sandbox Dealer",
+      "sender_email": "purchasing@sandboxdealer.test",
+      "date": 1710496000000,
+      "body_plain": "Brad,\n\nCan you get me a quote on 4x Sandbox Widget Pro? Need it for a job in Fargo.\n\n-Sandbox Purchasing",
+      "has_attachment": false,
+      "labels": 1,
+      "in_reply_to": ""
+    },
+    {
+      "id": "MSG003",
+      "threadId": "THREAD003",
+      "messageId": "<msg003@sandbox.test>",
+      "subject": "Weekly Newsletter — Sandbox Industry News",
+      "sender_name": "Sandbox Newsletter",
+      "sender_email": "noreply@sandboxnews.test",
+      "date": 1710492000000,
+      "body_plain": "This Week in AV\n\nIndustry news content...",
+      "has_attachment": false,
+      "labels": 1,
+      "in_reply_to": ""
+    }
+  ],
+
   "auth_response": {
     "access_token": "sandbox_mail_token_abc123",
     "token_type": "Bearer",

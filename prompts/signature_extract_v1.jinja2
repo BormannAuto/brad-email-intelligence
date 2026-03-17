@@ -1,0 +1,22 @@
+{# prompt_name: signature_extract #}
+{# version: 1.0 #}
+{# output_schema_class: SignatureExtractOutput #}
+{# date_last_reviewed: 2026-03-16 #}
+{# reviewed_by: Tony #}
+{# description: Extracts structured contact information from email signatures and body text #}
+
+Extract contact information from the email text below. Only extract information that is explicitly stated — do not infer, guess, or derive values.
+
+RULES:
+- Set field to null if not explicitly present in the text
+- confidence_per_field: HIGH = exact match found, MEDIUM = probable match, LOW = inferred
+- Do not combine first and last name unless they appear together
+- Phone vs Mobile: use context clues (labels like "M:", "Cell:", "Mobile:" vs "P:", "Ph:", "Tel:")
+- extraction_notes: brief note on any ambiguity or unusual formatting encountered
+- If no signature is detectable, all fields should be null and extraction_notes should explain
+
+EMAIL ID: {{ email_id }}
+
+--- EMAIL TEXT ---
+{{ email_body }}
+--- END EMAIL TEXT ---

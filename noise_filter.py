@@ -81,7 +81,7 @@ def _is_noise(email: dict, blocked_domains: list, blocked_senders: list,
     sender_email  = (email.get("sender_email") or "").lower()
     sender_domain = sender_email.split("@")[-1] if "@" in sender_email else ""
     subject       = (email.get("subject") or "").lower()
-    labels        = (email.get("labels") or "").lower()
+    labels        = str(email.get("labels") or "").lower()  # folderId is int from Zoho API
 
     # Hard block rules from config
     if sender_domain in [d.lower() for d in blocked_domains]:
